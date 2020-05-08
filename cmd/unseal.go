@@ -4,6 +4,7 @@ import (
 	"github.com/gesquive/cli"
 	"github.com/gesquive/krypt/crypto"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // unsealCmd represents the decrypt command
@@ -13,20 +14,33 @@ var unsealCmd = &cobra.Command{
 	Short:     "Unseal encrypted file(s)",
 	Long:      `Unseal existing encrypted files. This command can operate on multiple files at once.`,
 	ValidArgs: []string{"FILE"},
-	PreRun:    runPreCheck,
+	PreRun:    runUnsealPreRun,
 	Run:       runUnseal,
 }
 
 func init() {
 	RootCmd.AddCommand(unsealCmd)
+
+	unsealCmd.PersistentFlags().StringP("password-file", "p", "",
+		"The password file")
+
+	viper.BindEnv("password")
+	viper.BindEnv("password-file")
+}
+
+func runUnsealPreRun(cmd *cobra.Command, args []string) {
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runUnseal(cmd *cobra.Command, args []string) {
+	password := cliGetPassword()
+
 	if len(args) <= 0 {
 		cli.Info("No file to decrypt specified.")
 		return
 	}
 	for _, file := range args {
+		// TODO: use glob to expand file paths
 		cli.Debug("Decrypting %s", file)
 		err := decryptFile(password, file)
 		if err != nil {

@@ -53,7 +53,7 @@ func getCipher(cipherType CipherType) (cipher Cipher, err error) {
 	case SERPENT:
 		cipher = NewSerpentCipher()
 	default:
-		err = errors.New("cipher type not recognized")
+		err = NewUnknownCipherTypeError()
 	}
 	return
 }
@@ -68,13 +68,14 @@ func getCipherByName(name string) (cipher Cipher, err error) {
 	case serpentName:
 		cipher = NewSerpentCipher()
 	default:
-		err = errors.New("cipher name not recognized")
+		err = NewUnknownCipherNameError()
 	}
 	return
 }
 
 // GetCipherTypeByName gets the CipherType by name
-func GetCipherTypeByName(name string) (c CipherType) {
+func GetCipherTypeByName(name string) (c CipherType, err error) {
+	//TODO: make this not care about whitespace or letter case
 	switch strings.TrimSpace(name) {
 	case aes256Name:
 		c = AES256
@@ -83,7 +84,7 @@ func GetCipherTypeByName(name string) (c CipherType) {
 	case serpentName:
 		c = SERPENT
 	default:
-		c = Unknown
+		err = NewUnknownCipherNameError()
 	}
 	return
 }

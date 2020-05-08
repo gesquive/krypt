@@ -37,7 +37,7 @@ The application looks for variables in the following order:
  - config file variable
  - default
 
-So any variable spekryptied on the command line would override values set in the environment or config file.
+So any variable specified on the command line would override values set in the environment or config file.
 
 ### Config File
 The application looks for a configuration file at the following locations in order:

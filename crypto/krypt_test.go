@@ -110,10 +110,20 @@ func TestDataNotEncrypted(t *testing.T) {
 }
 
 func TestGetCipherTypeByName(t *testing.T) {
-	cryptType := GetCipherTypeByName("no-crypt")
+	cryptType, err := GetCipherTypeByName("no-crypt")
+	assert.EqualError(t, err, "cipher name not recognized", "unexpected error")
 	assert.Equal(t, Unknown, cryptType, "crypt types mismatch")
 
-	cryptType = GetCipherTypeByName("AES256")
+	cryptType, err = GetCipherTypeByName("")
+	assert.EqualError(t, err, "cipher name not recognized", "unexpected error")
+	assert.Equal(t, Unknown, cryptType, "crypt types mismatch")
+
+	// cryptType, err = GetCipherTypeByName("aes256")
+	// assert.Nil(t, err, "unexpected error")
+	// assert.Equal(t, AES256, cryptType, "crypt types mismatch")
+
+	cryptType, err = GetCipherTypeByName("AES256")
+	assert.Nil(t, err, "unexpected error")
 	assert.Equal(t, AES256, cryptType, "crypt types mismatch")
 }
 

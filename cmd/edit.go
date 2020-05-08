@@ -18,7 +18,7 @@ var editCmd = &cobra.Command{
 file using the defined editor. Once editing is done, it will encrypt the contents back to the
 original file.`,
 	ValidArgs: []string{"FILE"},
-	PreRun:    runPreCheck,
+	PreRun:    runEditPreRun,
 	Run:       runEdit,
 }
 
@@ -26,18 +26,27 @@ func init() {
 	RootCmd.AddCommand(editCmd)
 
 	editCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
+	editCmd.PersistentFlags().StringP("password-file", "p", "",
+		"The password file")
+	editCmd.PersistentFlags().StringP("cipher", "i", "AES256",
+		"The cipher to encrypt with. Use the list command for a full list.")
 
 	viper.BindEnv("editor")
-	viper.BindPFlag("editor", editCmd.PersistentFlags().Lookup("editor"))
+	viper.BindEnv("cipher")
+	viper.BindEnv("password")
+	viper.BindEnv("password-file")
+}
+
+func runEditPreRun(cmd *cobra.Command, args []string) {
+	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
+	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runEdit(cmd *cobra.Command, args []string) {
-	editor := getEditor()
-	if len(editor) == 0 {
-		cli.Error("No editor found, please specify an editor")
-		return
-	}
-	cli.Debug("Using '%s' as editor", editor)
+	cipherType := cliGetCipherType()
+	password := cliGetPassword()
+	editor := cliGetEditor()
 
 	if len(args) <= 0 {
 		cmd.Usage()
@@ -55,7 +64,7 @@ func runEdit(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	newPlainText, err := getFileEdit(editor, origPlainText)
+	newPlainText, err := cliRunFileEdit(editor, origPlainText)
 	if err != nil {
 		cli.Error("Error while editing file '%s'", file)
 		cli.Debug("%v", err)
@@ -67,7 +76,7 @@ func runEdit(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if err := writeCrypt(password, file, newPlainText); err != nil {
+	if err := writeCrypt(cipherType, password, file, newPlainText); err != nil {
 		cli.Error("Could not encrypt data for file '%s'", file)
 		cli.Debug("%v", err)
 		return

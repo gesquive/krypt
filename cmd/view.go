@@ -15,7 +15,7 @@ var viewCmd = &cobra.Command{
 	Long: `This command will decrypt the file to a temporary file and allow you to view the
 file without modifying the contents.`,
 	ValidArgs: []string{"FILE"},
-	PreRun:    runPreCheck,
+	PreRun:    runViewPreRun,
 	Run:       runView,
 }
 
@@ -23,19 +23,22 @@ func init() {
 	RootCmd.AddCommand(viewCmd)
 
 	viewCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
+	viewCmd.PersistentFlags().StringP("password-file", "p", "",
+		"The password file")
 
 	viper.BindEnv("editor")
-	viper.BindPFlag("editor", viewCmd.PersistentFlags().Lookup("editor"))
+	viper.BindEnv("password")
+	viper.BindEnv("password-file")
+}
 
+func runViewPreRun(cmd *cobra.Command, args []string) {
+	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runView(cmd *cobra.Command, args []string) {
-	editor := getEditor()
-	if len(editor) == 0 {
-		cli.Error("No editor found, please specify an editor")
-		return
-	}
-	cli.Debug("Using '%s' as editor", editor)
+	password := cliGetPassword()
+	editor := cliGetEditor()
 
 	if len(args) <= 0 {
 		cmd.Usage()
@@ -53,5 +56,5 @@ func runView(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	getFileEdit(editor, plainText)
+	cliRunFileEdit(editor, plainText)
 }

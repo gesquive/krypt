@@ -20,7 +20,6 @@ func init() {
 }
 
 func runList(cmd *cobra.Command, args []string) {
-
 	cli.Info("Supported Ciphers:")
 	cipherList := crypto.GetCipherList()
 	for _, cipher := range cipherList {

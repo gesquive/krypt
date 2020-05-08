@@ -2,15 +2,19 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
+	"syscall"
 
 	"github.com/gesquive/cli"
 	"github.com/gesquive/krypt/crypto"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // readFile opens a file and reads the content
@@ -59,7 +63,7 @@ func readCrypt(password string, filePath string) ([]byte, error) {
 }
 
 // writeCrypt encrypts the plain text and writes to filePath
-func writeCrypt(password string, filePath string, plainText []byte) error {
+func writeCrypt(cipherType crypto.CipherType, password string, filePath string, plainText []byte) error {
 	cipherText, err := crypto.Encrypt(cipherType, []byte(password), plainText)
 	if err != nil {
 		if derr, ok := err.(*crypto.DataIsEncryptedError); ok {
@@ -75,13 +79,13 @@ func writeCrypt(password string, filePath string, plainText []byte) error {
 }
 
 // encryptFile opens a file, encrypts the contents, and writes back the cipher text
-func encryptFile(password string, filePath string) error {
+func encryptFile(cipherType crypto.CipherType, password string, filePath string) error {
 	plainText, err := readFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	err = writeCrypt(password, filePath, plainText)
+	err = writeCrypt(cipherType, password, filePath, plainText)
 	if err != nil {
 		return err
 	}
@@ -101,16 +105,68 @@ func decryptFile(password string, filePath string) error {
 	return nil
 }
 
-// getFileEdit creates a temporary file and opens it with the given editor.
+func cliGetPassword() string {
+	// if a password is provided, use it
+	envPassword := strings.TrimSpace(viper.GetString("password"))
+	if len(envPassword) > 0 {
+		cli.Debug("password src: cli")
+		return viper.GetString("password")
+	}
+	// if a password-file is provided, use the password in it
+	passwordFilePath := viper.GetString("password-file")
+	if len(passwordFilePath) > 0 {
+		if _, err := os.Stat(passwordFilePath); os.IsNotExist(err) {
+			cli.Error("password-file: does not exist (\"%s\")", passwordFilePath)
+		} else {
+			filePassword, err := ioutil.ReadFile(passwordFilePath)
+			if err != nil {
+				cli.Error("password-file: could not open (\"%s\")", passwordFilePath)
+			} else {
+				filePassword = bytes.TrimSpace(filePassword)
+				if len(filePassword) > 0 {
+					cli.Debug("password-file: \"%s\"", passwordFilePath)
+					return string(filePassword)
+				}
+				cli.Error("password-file: file is empty (\"%s\")", passwordFilePath)
+			}
+		}
+
+	}
+	// no password has been provided, kindly pester the user for a valid password
+	var userPassword []byte
+	for len(userPassword) == 0 {
+		fmt.Print("Enter password: ")
+		userPassword, _ = terminal.ReadPassword(int(syscall.Stdin))
+		fmt.Print("\n")
+		userPassword = bytes.TrimSpace(userPassword)
+		if len(userPassword) == 0 {
+			cli.Error("Password is not long enough")
+		}
+	}
+	return string(userPassword)
+}
+
+func cliGetCipherType() crypto.CipherType {
+	cipherName := viper.GetString("cipher")
+	cipherType, err := crypto.GetCipherTypeByName(cipherName)
+	if err != nil || cipherType == crypto.Unknown {
+		cli.Fatal("unknown encryption cipher specified")
+	}
+
+	cli.Debug("cipher: '%s'", cipherName)
+	return cipherType
+}
+
+// cliRunFileEdit creates a temporary file and opens it with the given editor.
 // 	If the editor successfully returns, the contents of the temporary file are returned.
-func getFileEdit(editor string, content []byte) ([]byte, error) {
+func cliRunFileEdit(editor string, content []byte) ([]byte, error) {
 	// create temp file, w/ permissions
 	tmpFile, err := ioutil.TempFile("", "krypt")
 	if err != nil {
 		return nil, errors.Wrapf(err, "creating tempfile")
 	}
 
-	cli.Debug("using tmpfile: %s", tmpFile.Name())
+	cli.Debug("tmpfile: %s", tmpFile.Name())
 	defer func() {
 		tmpFile.Close()
 		cli.Debug("removing tmpfile")
@@ -130,14 +186,14 @@ func getFileEdit(editor string, content []byte) ([]byte, error) {
 	if err := cmd.Start(); err != nil {
 		return nil, errors.Wrapf(err, "editor start failed")
 	}
-	cli.Debug("waiting for command to finish.")
+	cli.Debug("started editor")
 
 	if err := cmd.Wait(); err != nil {
 		// editor failed, just delete the tempfile
-		cli.Debug("editor failed with: %v", err)
+		cli.Debug("editor returns failure: %v", err)
 	} else {
 		// editor success, return contents
-		cli.Debug("editor reports success")
+		cli.Debug("editor returns success")
 		newContent, err := readFile(tmpFile.Name())
 		if err == nil {
 			return newContent, nil
@@ -149,13 +205,15 @@ func getFileEdit(editor string, content []byte) ([]byte, error) {
 
 // getEditor gets an editor to use by first checking env variables to see if they are defined,
 //	if not, we go through a list of known editors we might be able to use. If any are found, we use them
-func getEditor() string {
+func cliGetEditor() string {
 	cmdEditor := viper.GetString("editor")
 	if len(cmdEditor) > 0 {
+		cli.Debug("cli editor: '%s'", cmdEditor)
 		return cmdEditor
 	}
 	envEditor := os.Getenv("EDITOR")
 	if len(envEditor) > 0 {
+		cli.Debug("env editor: '%s'", envEditor)
 		return envEditor
 	}
 
@@ -164,9 +222,11 @@ func getEditor() string {
 	for _, knownEditor := range knownEditors {
 		path, err := exec.LookPath(knownEditor)
 		if err == nil {
+			cli.Debug("editor: '%s'", path)
 			return path
 		}
 	}
 
+	cli.Fatal("No editor found, please specify an editor")
 	return ""
 }
