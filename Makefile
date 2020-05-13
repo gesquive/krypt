@@ -44,7 +44,7 @@ help:
 	 awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build
-build: ## Compile the project
+build: docs ## Compile the project
 	@echo "building ${OWNER} ${BIN_NAME} ${MK_VERSION}"
 	@echo "GOPATH=${GOPATH}"
 	${GOCC} build -a -ldflags "-X main.buildVersion=${MK_VERSION} -X main.buildDate=${MK_DATE}" -o ${BIN_NAME}
@@ -154,3 +154,7 @@ release-docker-snapshot: init-docker-build
 release-docker: init-docker-build ## Build a multi-arch docker manifest and images
 	@echo "building multi-arch docker ${DK_VERSION}"
 	${DOCKER} buildx build -f ${DK_PATH} --platform ${DK_PLATFORMS} --pull -t ${DK_NAME}:${DK_VERSION} -t ${DK_NAME}:latest --push .
+
+.PHONY: docs
+docs:
+	${GOCC} generate
