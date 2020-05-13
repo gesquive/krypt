@@ -18,7 +18,6 @@ var (
 )
 
 var cfgFile string
-var displayVersion string
 
 var debug bool
 var showVersion bool
@@ -29,6 +28,7 @@ var RootCmd = &cobra.Command{
 	Short:            "Encrypt or Decrypt files",
 	Long:             `Encrypt or Decrypt files with various ciphers`,
 	PersistentPreRun: preRun,
+	Run:              preRun,
 	Hidden:           true,
 }
 
@@ -50,12 +50,13 @@ func init() {
 		"Path to a specific config file (default \"./config.yml\")")
 	RootCmd.PersistentFlags().BoolVarP(&debug, "debug", "D", false,
 		"Write debug messages to console")
-	RootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "V", false,
+	RootCmd.PersistentFlags().BoolVarP(&showVersion, "version", "v", false,
 		"Show the version info and exit")
 	RootCmd.PersistentFlags().MarkHidden("debug")
 
 	viper.SetEnvPrefix("krypt")
 	viper.AutomaticEnv()
+	globalPreRun()
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -78,8 +79,14 @@ func initConfig() {
 			}
 		}
 	}
+	globalPreRun()
 }
+
 func preRun(cmd *cobra.Command, args []string) {
+	globalPreRun()
+}
+
+func globalPreRun() {
 	if showVersion {
 		fmt.Printf("github.com/gesquive/krypt\n")
 		fmt.Printf(" Version:    %s\n", buildVersion)
