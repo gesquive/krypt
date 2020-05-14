@@ -47,7 +47,7 @@ help:
 build: docs ## Compile the project
 	@echo "building ${OWNER} ${BIN_NAME} ${MK_VERSION}"
 	@echo "GOPATH=${GOPATH}"
-	${GOCC} build -a -ldflags "-X main.buildVersion=${MK_VERSION} -X main.buildDate=${MK_DATE}" -o ${BIN_NAME}
+	${GOCC} build -a -ldflags "-X main.BuildVersion=${MK_VERSION} -X main.BuildCommit=${MK_HASH} -X main.BuildDate=${MK_DATE}" -o ${BIN_NAME}
 
 .PHONY: install
 install: build ## Install the binary

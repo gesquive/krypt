@@ -6,6 +6,16 @@ import (
 	"github.com/gesquive/krypt/cmd"
 )
 
+// current build info
+var (
+	BuildVersion = "v0.1.0-dev"
+	BuildCommit  = ""
+	BuildDate    = ""
+)
+
 func main() {
+	cmd.BuildVersion = BuildVersion
+	cmd.BuildCommit = BuildCommit
+	cmd.BuildDate = BuildDate
 	cmd.Execute()
 }
