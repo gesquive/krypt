@@ -28,16 +28,16 @@ var RootCmd = &cobra.Command{
 	Use:              "krypt [flags] command",
 	Short:            "Encrypt or Decrypt files",
 	Long:             `Encrypt or Decrypt files with various ciphers`,
-	PersistentPreRun: preRun,
-	Run:              preRun,
+	PersistentPreRun: persistentPreRun,
+	Run:              runRoot,
 	Hidden:           true,
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	RootCmd.SetHelpTemplate(fmt.Sprintf("%s\nVersion:\n  github.com/gesquive/krypt %s\n",
-		RootCmd.HelpTemplate(), BuildVersion))
+	RootCmd.SetHelpTemplate(helpTemplate())
+	RootCmd.SetUsageTemplate(usageTemplate())
 	if err := RootCmd.Execute(); err != nil {
 		os.Exit(-1)
 	}
@@ -56,7 +56,6 @@ func init() {
 
 	viper.SetEnvPrefix("krypt")
 	viper.AutomaticEnv()
-	globalPreRun()
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -79,10 +78,15 @@ func initConfig() {
 			}
 		}
 	}
-	globalPreRun()
 }
 
-func preRun(cmd *cobra.Command, args []string) {
+func runRoot(cmd *cobra.Command, args []string) {
+	globalPreRun()
+	cmd.Help()
+	os.Exit(0)
+}
+
+func persistentPreRun(cmd *cobra.Command, args []string) {
 	globalPreRun()
 }
 
@@ -105,4 +109,34 @@ func globalPreRun() {
 	}
 	cli.Debug("running with debug turned on")
 	cli.Debug("config: %s", viper.ConfigFileUsed())
+}
+
+func helpTemplate() string {
+	return fmt.Sprintf("%s\nVersion:\n  github.com/gesquive/krypt %s\n",
+		RootCmd.HelpTemplate(), BuildVersion)
+}
+func usageTemplate() string {
+	return `Usage:{{if .Runnable}}
+  {{.UseLine}}{{end}}{{if gt (len .Aliases) 0}}
+
+Aliases:
+  {{.NameAndAliases}}{{end}}{{if .HasExample}}
+  
+Examples:
+  {{.Example}}{{end}}{{if .HasAvailableSubCommands}}
+  
+Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+  
+Flags:
+{{.LocalFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasAvailableInheritedFlags}}
+  
+Global Flags:
+{{.InheritedFlags.FlagUsages | trimTrailingWhitespaces}}{{end}}{{if .HasHelpSubCommands}}
+  
+Additional help topics:{{range .Commands}}{{if .IsAdditionalHelpTopicCommand}}
+  {{rpad .CommandPath .CommandPathPadding}} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableSubCommands}}
+  
+Use "{{.CommandPath}} [command] --help" for more information about a command.{{end}}
+`
 }
