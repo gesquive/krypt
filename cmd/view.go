@@ -15,6 +15,7 @@ var viewCmd = &cobra.Command{
 	Long: `This command will decrypt the file to a temporary file and allow you to view the
 file without modifying the contents.`,
 	ValidArgs: []string{"FILE"},
+	Args:      VerifyExactFileArgs(1),
 	PreRun:    runViewPreRun,
 	Run:       runView,
 }
@@ -22,8 +23,8 @@ file without modifying the contents.`,
 func init() {
 	RootCmd.AddCommand(viewCmd)
 
-	viewCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
-	viewCmd.PersistentFlags().StringP("password-file", "p", "",
+	viewCmd.LocalFlags().StringP("editor", "e", "", "The editor to use")
+	viewCmd.LocalFlags().StringP("password-file", "p", "",
 		"The password file")
 
 	viper.BindEnv("editor")
@@ -32,18 +33,14 @@ func init() {
 }
 
 func runViewPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
-	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("editor", cmd.LocalFlags().Lookup("editor"))
+	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
 }
 
 func runView(cmd *cobra.Command, args []string) {
 	password := cliGetPassword()
 	editor := cliGetEditor()
 
-	if len(args) <= 0 {
-		cmd.Usage()
-		return
-	}
 	file := args[0]
 	plainText, err := readCrypt(password, file)
 	if err != nil {

@@ -18,6 +18,7 @@ var editCmd = &cobra.Command{
 file using the defined editor. Once editing is done, it will encrypt the contents back to the
 original file.`,
 	ValidArgs: []string{"FILE"},
+	Args:      VerifyExactFileArgs(1),
 	PreRun:    runEditPreRun,
 	Run:       runEdit,
 }
@@ -25,10 +26,10 @@ original file.`,
 func init() {
 	RootCmd.AddCommand(editCmd)
 
-	editCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
-	editCmd.PersistentFlags().StringP("password-file", "p", "",
+	editCmd.LocalFlags().StringP("editor", "e", "", "The editor to use")
+	editCmd.LocalFlags().StringP("password-file", "p", "",
 		"The password file")
-	editCmd.PersistentFlags().StringP("cipher", "i", "AES256",
+	editCmd.LocalFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
 
 	viper.BindEnv("editor")
@@ -38,9 +39,9 @@ func init() {
 }
 
 func runEditPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
-	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
-	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("editor", cmd.LocalFlags().Lookup("editor"))
+	viper.BindPFlag("cipher", cmd.LocalFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
 }
 
 func runEdit(cmd *cobra.Command, args []string) {
@@ -48,10 +49,6 @@ func runEdit(cmd *cobra.Command, args []string) {
 	password := cliGetPassword()
 	editor := cliGetEditor()
 
-	if len(args) <= 0 {
-		cmd.Usage()
-		return
-	}
 	file := args[0]
 	origPlainText, err := readCrypt(password, file)
 	if err != nil {

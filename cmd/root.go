@@ -39,7 +39,6 @@ func Execute() {
 	RootCmd.SetHelpTemplate(fmt.Sprintf("%s\nVersion:\n  github.com/gesquive/krypt %s\n",
 		RootCmd.HelpTemplate(), BuildVersion))
 	if err := RootCmd.Execute(); err != nil {
-		fmt.Println(err)
 		os.Exit(-1)
 	}
 }

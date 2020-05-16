@@ -13,9 +13,32 @@ import (
 	"github.com/gesquive/cli"
 	"github.com/gesquive/krypt/crypto"
 	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh/terminal"
 )
+
+// VerifyMinimumNFileArgs returns an error if there is not at least N args.
+func VerifyMinimumNFileArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) < n {
+			return fmt.Errorf("Not enough files specified, expected at least %d", n)
+		}
+		return nil
+	}
+}
+
+// VerifyExactFileArgs returns an error if there are not exactly N args.
+func VerifyExactFileArgs(n int) cobra.PositionalArgs {
+	return func(cmd *cobra.Command, args []string) error {
+		if len(args) < n {
+			return errors.Errorf("Not enough files specified, expected %d", n)
+		} else if len(args) > n {
+			return errors.Errorf("Too many files specified, expected %d", n)
+		}
+		return nil
+	}
+}
 
 // readFile opens a file and reads the content
 func readFile(filePath string) ([]byte, error) {

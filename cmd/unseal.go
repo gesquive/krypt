@@ -14,6 +14,7 @@ var unsealCmd = &cobra.Command{
 	Short:     "Unseal encrypted file(s)",
 	Long:      `Unseal existing encrypted files. This command can operate on multiple files at once.`,
 	ValidArgs: []string{"FILE"},
+	Args:      VerifyMinimumNFileArgs(1),
 	PreRun:    runUnsealPreRun,
 	Run:       runUnseal,
 }
@@ -21,7 +22,7 @@ var unsealCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(unsealCmd)
 
-	unsealCmd.PersistentFlags().StringP("password-file", "p", "",
+	unsealCmd.LocalFlags().StringP("password-file", "p", "",
 		"The password file")
 
 	viper.BindEnv("password")
@@ -29,16 +30,12 @@ func init() {
 }
 
 func runUnsealPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
 }
 
 func runUnseal(cmd *cobra.Command, args []string) {
 	password := cliGetPassword()
 
-	if len(args) <= 0 {
-		cli.Info("No file to decrypt specified.")
-		return
-	}
 	for _, file := range args {
 		// TODO: use glob to expand file paths
 		cli.Debug("Decrypting %s", file)
