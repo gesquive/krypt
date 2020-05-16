@@ -6,26 +6,26 @@
 
 A command line file encrypter and decrypter.
 
-This program started as a clone of ansible-vault. Support for additional ciphers have been added.
+This program started as a clone of ansible-vault. Support for additional ciphers and a different binary only file format was added for flexibility.
 
 ## Installing
 
 ### Compile
-This project has only been tested with go1.11+. To compile just run `go get -u github.com/gesquive/cif` and the executable should be built for you automatically in your `$GOPATH`. This project uses go mods, so you might need to set `GO111MODULE=on` in order for `go get` to complete properly.
+This project has only been tested with go1.14+. To compile just run `go get -u github.com/gesquive/krypt` and the executable should be built for you automatically in your `$GOPATH`. This project uses go mods, so you might need to set `GO111MODULE=on` in order for `go get` to complete properly.
 
 Optionally you can run `make install` to build and copy the executable to `/usr/local/bin/` with correct permissions.
 
 ### Download
-Alternately, you can download the latest release for your platform from [github](https://github.com/gesquive/cif/releases).
+Alternately, you can download the latest release for your platform from [github](https://github.com/gesquive/krypt/releases).
 
 Once you have an executable, make sure to copy it somewhere on your path like `/usr/local/bin` or `C:/Program Files/`.
-If on a \*nix/mac system, make sure to run `chmod +x /path/to/cif`.
+If on a \*nix/mac system, make sure to run `chmod +x /path/to/krypt`.
 
 ### Homebrew
 This app is also avalable from this [homebrew tap](https://github.com/gesquive/homebrew-tap). Just install the tap and then the app will be available.
 ```shell
 $ brew tap gesquive/tap
-$ brew install cif
+$ brew install krypt
 ```
 
 ## Configuration
@@ -54,27 +54,21 @@ Optionally, instead of using a config file you can specify config entries as env
 Encrypt or Decrypt files using different ciphers
 
 Usage:
-  krypt [command]
+  krypt [flags] command
 
 Available Commands:
   create      Create a new encrypted text file
-  decrypt     Decrypt encrypted file(s)
   edit        Decrypt, edit and encrypt an encrypted file
-  encrypt     Encrypt unencrypted file(s)
-  key         Change the password on encrypted file(s)
+  help        Help about any command
   list        List the available cipher methods
-  view        Decrypt and view the contents of an encrypted file without editing
+  reseal      Change the password/cipher on encrypted file(s)
+  seal        Seal unencrypted file(s)
+  unseal      Unseal encrypted file(s)
+  view        Decrypt and view the contents of a sealed file without editing
 
 Flags:
-  -y, --cipher string          The cipher to en/decrypt with. Use the list command for a full list. (default "AES256")
-  -c, --config string          config file (default is $HOME/.config/krypt.yml)
-  -p, --password-file string   The password file
-  -V, --version                Show the version and exit
-
-Use "krypt [command] --help" for more information about a command.
-
-Version:
-  github.com/gesquive/krypt v0.1.0
+  -c, --config string   Path to a specific config file (default "./config.yml")
+  -v, --version         Show the version info and exit
 ```
 
 Optionally, a hidden debug flag is available in case you need additional output.

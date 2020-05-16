@@ -11,7 +11,7 @@ import (
 var viewCmd = &cobra.Command{
 	Use:     "view [flags] FILE",
 	Aliases: []string{"v"},
-	Short:   "Decrypt and view the contents of an encrypted file without editing",
+	Short:   "Decrypt and view the contents of a sealed file without editing",
 	Long: `This command will decrypt the file to a temporary file and allow you to view the
 file without modifying the contents.`,
 	ValidArgs: []string{"FILE"},

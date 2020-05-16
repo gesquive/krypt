@@ -2,7 +2,7 @@
 
 This library converts bytes into an encrypted binary format and back.
 
-crypt uses the (GCM mode of operation)[https://en.wikipedia.org/wiki/Galois/Counter_Mode] with the specified block cipher to create cipher text that is then packaged in a binary file format.
+crypto uses the (GCM mode of operation)[https://en.wikipedia.org/wiki/Galois/Counter_Mode] with the specified block cipher to create cipher text that is then packaged in a binary file format.
 
 Keys are derived from the given password using HMAC-SHA-256 based PBKDF2 key derivation function.
 
