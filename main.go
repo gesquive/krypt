@@ -8,7 +8,7 @@ import (
 
 // current build info
 var (
-	BuildVersion = "v0.1.0-dev"
+	BuildVersion = "v1.0.0-dev"
 	BuildCommit  = ""
 	BuildDate    = ""
 )
