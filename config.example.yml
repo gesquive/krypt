@@ -1,0 +1,3 @@
+cipher: AES256
+password-file: ./krypt_password
+editor: vim

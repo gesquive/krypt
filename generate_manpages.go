@@ -13,7 +13,7 @@ import (
 	"github.com/spf13/cobra/doc"
 )
 
-var destinationPath = "docs/manpages"
+var destinationPath = "manpages"
 
 func main() {
 	if _, err := os.Stat(destinationPath); os.IsNotExist(err) {

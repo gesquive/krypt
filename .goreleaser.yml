@@ -42,6 +42,8 @@ archives:
       - LICENSE*
       - README*
       - CHANGELOG*
+      - manpages/*
+      - config.example.yml
 
 checksum:
   name_template: '{{ .ProjectName }}_v{{ .Version }}_checksums.txt'
@@ -99,3 +101,10 @@ brews:
 
     # Packages that conflict with your package.
     conflicts: []
+
+    # Custom install script for brew.
+    # Default is 'bin.install "program"'.
+    install: |
+      bin.install "krypt"
+      man.mkpath
+      man1.install "manpages/krypt.1", "manpages/krypt-create.1", "manpages/krypt-edit.1", "manpages/krypt-list.1", "manpages/krypt-reseal.1", "manpages/krypt-seal.1", "manpages/krypt-unseal.1", "manpages/krypt-view.1"

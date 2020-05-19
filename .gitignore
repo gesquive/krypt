@@ -3,11 +3,12 @@ vendor/*
 dist/
 scripts/
 data/
-docs/
+manpages/
 
 *.bak
 *.log
 
 config*.yml
 !.circleci/config.yml
+!config.example.yml
 krypt
