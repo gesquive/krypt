@@ -44,7 +44,7 @@ help:
 	 awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: build
-build: docs ## Compile the project
+build: ## Compile the project
 	@echo "building ${OWNER} ${BIN_NAME} ${MK_VERSION}"
 	@echo "GOPATH=${GOPATH}"
 	${GOCC} build -a -ldflags "-X main.BuildVersion=${MK_VERSION} -X main.BuildCommit=${MK_HASH} -X main.BuildDate=${MK_DATE}" -o ${BIN_NAME}
@@ -104,11 +104,11 @@ clean: ## Clean the directory tree
 	rm -f "${COVER_PATH}"
 
 .PHONY: release-snapshot
-release-snapshot: ${GORELEASER} ## Cross compile and package to local disk
+release-snapshot: ${GORELEASER} docs ## Cross compile and package to local disk
 	${GORELEASER} release --skip-publish --rm-dist --snapshot
 
 .PHONY: release
-release: ${GORELEASER} ## Cross compile and package the full distribution
+release: ${GORELEASER} docs ## Cross compile and package the full distribution
 	${GORELEASER} release --rm-dist
 
 .PHONY: fmt
