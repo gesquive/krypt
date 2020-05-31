@@ -22,10 +22,10 @@ defined editor. After editing the file, the contents will be encrypted to the de
 func init() {
 	RootCmd.AddCommand(createCmd)
 
-	createCmd.LocalFlags().StringP("editor", "e", "", "The editor to use")
-	createCmd.LocalFlags().StringP("password-file", "p", "",
+	createCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
+	createCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file")
-	createCmd.LocalFlags().StringP("cipher", "i", "AES256",
+	createCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
 
 	viper.BindEnv("editor")
@@ -35,9 +35,9 @@ func init() {
 }
 
 func runCreatePreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("editor", cmd.LocalFlags().Lookup("editor"))
-	viper.BindPFlag("cipher", cmd.LocalFlags().Lookup("cipher"))
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
+	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
+	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runCreate(cmd *cobra.Command, args []string) {

@@ -22,7 +22,7 @@ var unsealCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(unsealCmd)
 
-	unsealCmd.LocalFlags().StringP("password-file", "p", "",
+	unsealCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file")
 
 	viper.BindEnv("password")
@@ -30,7 +30,7 @@ func init() {
 }
 
 func runUnsealPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runUnseal(cmd *cobra.Command, args []string) {

@@ -26,10 +26,10 @@ original file.`,
 func init() {
 	RootCmd.AddCommand(editCmd)
 
-	editCmd.LocalFlags().StringP("editor", "e", "", "The editor to use")
-	editCmd.LocalFlags().StringP("password-file", "p", "",
+	editCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
+	editCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file")
-	editCmd.LocalFlags().StringP("cipher", "i", "AES256",
+	editCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
 
 	viper.BindEnv("editor")
@@ -39,9 +39,9 @@ func init() {
 }
 
 func runEditPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("editor", cmd.LocalFlags().Lookup("editor"))
-	viper.BindPFlag("cipher", cmd.LocalFlags().Lookup("cipher"))
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
+	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
+	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runEdit(cmd *cobra.Command, args []string) {

@@ -30,11 +30,11 @@ var resealCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(resealCmd)
 
-	resealCmd.LocalFlags().StringP("cipher", "i", "AES256",
+	resealCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
-	resealCmd.LocalFlags().StringP("password-file", "p", "",
+	resealCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file to encrypt with.")
-	resealCmd.LocalFlags().StringP("old-password-file", "o", "",
+	resealCmd.PersistentFlags().StringP("old-password-file", "o", "",
 		"The old password file to decrypt with.")
 
 	viper.BindEnv("cipher")
@@ -46,9 +46,9 @@ func init() {
 }
 
 func runResealPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("cipher", cmd.LocalFlags().Lookup("cipher"))
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
-	viper.BindPFlag("old-password-file", cmd.LocalFlags().Lookup("old-password-file"))
+	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("old-password-file", cmd.PersistentFlags().Lookup("old-password-file"))
 }
 
 func runReseal(cmd *cobra.Command, args []string) {

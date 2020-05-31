@@ -23,8 +23,8 @@ file without modifying the contents.`,
 func init() {
 	RootCmd.AddCommand(viewCmd)
 
-	viewCmd.LocalFlags().StringP("editor", "e", "", "The editor to use")
-	viewCmd.LocalFlags().StringP("password-file", "p", "",
+	viewCmd.PersistentFlags().StringP("editor", "e", "", "The editor to use")
+	viewCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file")
 
 	viper.BindEnv("editor")
@@ -33,8 +33,8 @@ func init() {
 }
 
 func runViewPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("editor", cmd.LocalFlags().Lookup("editor"))
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
+	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 
 func runView(cmd *cobra.Command, args []string) {

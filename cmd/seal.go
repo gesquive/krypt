@@ -22,9 +22,9 @@ var sealCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(sealCmd)
 
-	sealCmd.LocalFlags().StringP("password-file", "p", "",
+	sealCmd.PersistentFlags().StringP("password-file", "p", "",
 		"The password file")
-	sealCmd.LocalFlags().StringP("cipher", "i", "AES256",
+	sealCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
 
 	viper.BindEnv("cipher")
@@ -33,8 +33,8 @@ func init() {
 }
 
 func runSealPreRun(cmd *cobra.Command, args []string) {
-	viper.BindPFlag("cipher", cmd.LocalFlags().Lookup("cipher"))
-	viper.BindPFlag("password-file", cmd.LocalFlags().Lookup("password-file"))
+	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
+	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
 }
 func runSeal(cmd *cobra.Command, args []string) {
 	cipherType := cliGetCipherType()
