@@ -73,7 +73,7 @@ release:
 brews:
   -
     # Github repository to push the tap to.
-    github:
+    tap:
       owner: gesquive
       name: homebrew-tap
 
