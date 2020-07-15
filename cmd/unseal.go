@@ -39,7 +39,7 @@ func runUnseal(cmd *cobra.Command, args []string) {
 	for _, file := range args {
 		// TODO: use glob to expand file paths
 		cli.Debug("Decrypting %s", file)
-		err := decryptFile(password, file)
+		_, err := decryptFile(password, file)
 		if err != nil {
 			if _, ok := err.(*crypto.DataIsNotEncryptedError); ok {
 				cli.Error("File is not encrypted, cannot decrypt")

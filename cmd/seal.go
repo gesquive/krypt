@@ -26,23 +26,28 @@ func init() {
 		"The password file")
 	sealCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
+	sealCmd.PersistentFlags().BoolP("encode-text", "t", false,
+		"encode the output in base64")
 
 	viper.BindEnv("cipher")
 	viper.BindEnv("password")
 	viper.BindEnv("password-file")
+	viper.BindEnv("encode-text")
 }
 
 func runSealPreRun(cmd *cobra.Command, args []string) {
 	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
 	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("encode-text", cmd.PersistentFlags().Lookup("encode-text"))
 }
 func runSeal(cmd *cobra.Command, args []string) {
 	cipherType := cliGetCipherType()
 	password := cliGetPassword()
+	encodeText := viper.GetBool("encode-text")
 
 	for _, file := range args {
 		cli.Debug("Encrypting %s", file)
-		err := encryptFile(cipherType, password, file)
+		err := encryptFile(cipherType, password, file, encodeText)
 		if err != nil {
 			if _, ok := err.(*crypto.DataIsEncryptedError); ok {
 				cli.Error("File is already encrypted, will not encrypt again")

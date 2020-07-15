@@ -42,7 +42,7 @@ func runView(cmd *cobra.Command, args []string) {
 	editor := cliGetEditor()
 
 	file := args[0]
-	plainText, err := readCrypt(password, file)
+	plainText, _, err := readCrypt(password, file)
 	if err != nil {
 		if _, ok := err.(*crypto.DataIsNotEncryptedError); ok {
 			cli.Error("File is not encrypted, cannot decrypt")

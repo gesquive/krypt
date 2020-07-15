@@ -50,7 +50,7 @@ func runEdit(cmd *cobra.Command, args []string) {
 	editor := cliGetEditor()
 
 	file := args[0]
-	origPlainText, err := readCrypt(password, file)
+	origPlainText, encoded, err := readCrypt(password, file)
 	if err != nil {
 		if _, ok := err.(*crypto.DataIsNotEncryptedError); ok {
 			cli.Error("File is not encrypted, cannot decrypt")
@@ -73,7 +73,7 @@ func runEdit(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if err := writeCrypt(cipherType, password, file, newPlainText); err != nil {
+	if err := writeCrypt(cipherType, password, file, newPlainText, encoded); err != nil {
 		cli.Error("Could not encrypt data for file '%s'", file)
 		cli.Debug("%v", err)
 		return

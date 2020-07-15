@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -68,31 +69,43 @@ func writeFile(filePath string, contents []byte) error {
 }
 
 // readCrypt opens a file, reads it and decrypts the contents
-func readCrypt(password string, filePath string) ([]byte, error) {
+func readCrypt(password string, filePath string) ([]byte, bool, error) {
 	var empty []byte
 	cipherText, err := readFile(filePath)
 	if err != nil {
-		return empty, err
+		return empty, false, err
+	}
+
+	var encoded = false
+	if decodedText, err := base64Decode(cipherText); err == nil {
+		cli.Debug("encoded text found, decoding")
+		cipherText = decodedText
+		encoded = true
 	}
 
 	plainText, err := crypto.Decrypt([]byte(password), cipherText)
 	if err != nil {
 		if derr, ok := err.(*crypto.DataIsNotEncryptedError); ok {
-			return empty, derr
+			return empty, encoded, derr
 		}
-		return empty, errors.Wrapf(err, "could not encrypt data")
+		return empty, encoded, errors.Wrapf(err, "could not decrypt data")
 	}
-	return plainText, nil
+	return plainText, encoded, nil
 }
 
 // writeCrypt encrypts the plain text and writes to filePath
-func writeCrypt(cipherType crypto.CipherType, password string, filePath string, plainText []byte) error {
+func writeCrypt(cipherType crypto.CipherType, password string, filePath string, plainText []byte, encodeOutput bool) error {
 	cipherText, err := crypto.Encrypt(cipherType, []byte(password), plainText)
 	if err != nil {
 		if derr, ok := err.(*crypto.DataIsEncryptedError); ok {
 			return derr
 		}
 		return errors.Wrapf(err, "could not encrypt data")
+	}
+
+	if encodeOutput {
+		cli.Debug("encoding output")
+		cipherText = base64Encode(cipherText)
 	}
 
 	if err := writeFile(filePath, cipherText); err != nil {
@@ -102,13 +115,13 @@ func writeCrypt(cipherType crypto.CipherType, password string, filePath string, 
 }
 
 // encryptFile opens a file, encrypts the contents, and writes back the cipher text
-func encryptFile(cipherType crypto.CipherType, password string, filePath string) error {
+func encryptFile(cipherType crypto.CipherType, password string, filePath string, encodeOutput bool) error {
 	plainText, err := readFile(filePath)
 	if err != nil {
 		return err
 	}
 
-	err = writeCrypt(cipherType, password, filePath, plainText)
+	err = writeCrypt(cipherType, password, filePath, plainText, encodeOutput)
 	if err != nil {
 		return err
 	}
@@ -116,16 +129,32 @@ func encryptFile(cipherType crypto.CipherType, password string, filePath string)
 }
 
 // decryptFile opens a file, decrypts the contents, and writes back the plain text
-func decryptFile(password string, filePath string) error {
-	plainText, err := readCrypt(password, filePath)
+func decryptFile(password string, filePath string) (bool, error) {
+	plainText, encoded, err := readCrypt(password, filePath)
 	if err != nil {
-		return err
+		return encoded, err
 	}
 
 	if err := writeFile(filePath, plainText); err != nil {
-		return err
+		return encoded, err
 	}
-	return nil
+	return encoded, nil
+}
+
+func base64Encode(data []byte) []byte {
+	encodedData := make([]byte, base64.StdEncoding.EncodedLen(len(data)))
+	base64.StdEncoding.Encode(encodedData, data)
+	return encodedData
+}
+
+func base64Decode(data []byte) ([]byte, error) {
+	var decodedData []byte
+	decodedData = make([]byte, base64.StdEncoding.DecodedLen(len(data)))
+	decodedLen, err := base64.StdEncoding.Decode(decodedData, data)
+	if err != nil {
+		return decodedData, err
+	}
+	return decodedData[:decodedLen], nil
 }
 
 func cliGetPassword() string {

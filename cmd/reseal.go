@@ -58,7 +58,7 @@ func runReseal(cmd *cobra.Command, args []string) {
 
 	for _, file := range args {
 		cli.Debug("reseal %s", file)
-		plainText, err := readCrypt(oldPassword, file)
+		plainText, encoded, err := readCrypt(oldPassword, file)
 		if err != nil {
 			if _, ok := err.(*crypto.DataIsNotEncryptedError); ok {
 				cli.Error("File is not encrypted, cannot decrypt")
@@ -68,7 +68,7 @@ func runReseal(cmd *cobra.Command, args []string) {
 			cli.Debug("%v", err)
 		}
 
-		err = writeCrypt(cipherType, password, file, plainText)
+		err = writeCrypt(cipherType, password, file, plainText, encoded)
 		if err != nil {
 			cli.Error("Could not write to %s", file)
 			cli.Debug("%v", err)

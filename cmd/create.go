@@ -27,23 +27,28 @@ func init() {
 		"The password file")
 	createCmd.PersistentFlags().StringP("cipher", "i", "AES256",
 		"The cipher to encrypt with. Use the list command for a full list.")
+	createCmd.PersistentFlags().BoolP("encode-text", "t", false,
+		"encode the output in base64")
 
 	viper.BindEnv("editor")
 	viper.BindEnv("cipher")
 	viper.BindEnv("password")
 	viper.BindEnv("password-file")
+	viper.BindEnv("encode-text")
 }
 
 func runCreatePreRun(cmd *cobra.Command, args []string) {
 	viper.BindPFlag("editor", cmd.PersistentFlags().Lookup("editor"))
 	viper.BindPFlag("cipher", cmd.PersistentFlags().Lookup("cipher"))
 	viper.BindPFlag("password-file", cmd.PersistentFlags().Lookup("password-file"))
+	viper.BindPFlag("encode-text", cmd.PersistentFlags().Lookup("encode-text"))
 }
 
 func runCreate(cmd *cobra.Command, args []string) {
 	cipherType := cliGetCipherType()
 	password := cliGetPassword()
 	editor := cliGetEditor()
+	encodeText := viper.GetBool("encode-text")
 
 	file := args[0]
 
@@ -54,7 +59,7 @@ func runCreate(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if err := writeCrypt(cipherType, password, file, newPlainText); err != nil {
+	if err := writeCrypt(cipherType, password, file, newPlainText, encodeText); err != nil {
 		cli.Error("Could not encrypt data for file '%s'", file)
 		cli.Debug("%v", err)
 		return
